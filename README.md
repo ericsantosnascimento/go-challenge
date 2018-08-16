@@ -1,88 +1,38 @@
 travel audience Go challenge
 ============================
 
-Task
+Solution
 ----
 
-Write an HTTP service that exposes an endpoint "/numbers". This endpoint receives a list of URLs 
-though GET query parameters. The parameter in use is called "u". It can appear 
-more than once.
+Basically my idea was make a simple as possible solution to call all the endpoints in the url and extract the url from it
+the task sounded simple, at least if didn't miss something really important.
 
-	http://yourserver:8080/numbers?u=http://example.com/primes&u=http://foobar.com/fibo
+So first thing I tried to make sure that I would fail fast if the url wasn't present, so in case of missing u param i will
+return empty array of numbers
 
-When the /numbers is called, your service shall retrieve each of these URLs if 
-they turn out to be syntactically valid URLs. Each URL will return a JSON data 
-structure that looks like this:
+In case attribute is present I will try to call the which api in a for loop, this method is real candidate to parallel execution
+but with my given time frame I wont be able to so.
 
-	{ "numbers": [ 1, 2, 3, 5, 8, 13 ] }
+After call api I extract parse the json to a type and I extract the number of it, the array of numbers is fully added
+to my result list.
 
-The JSON data structure will contain an object with a key named "numbers", and 
-a value that is a list of integers. After retrieving each of these URLs, the 
-service shall merge the integers coming from all URLs, sort them in ascending 
-order, and make sure that each integer only appears once in the result. The 
-endpoint shall then return a JSON data structure like in the example above with 
-the result as the list of integers.
+After getting out of the loop I remove duplicated and sort this smaller array right after.
 
-The endpoint needs to return the result as quickly as possible, but always 
-within 500 milliseconds. It needs to be able to deal with error conditions when 
-retrieving the URLs. If a URL takes too long to respond, it must be ignored. It 
-is valid to return an empty list as result only if all URLs returned errors or 
-took too long to respond.
+As I final step I check how long did it take and in case was longer than 500ms i return empty array, otherwise the numbers
 
-Example
--------
+I wasn't quite sure the idea of the 500ms check, I understood that would be some sort of circuit breaker emulation?
 
-The service receives an HTTP request:
+Concerns
+-----
 
-	>>> GET /numbers?u=http://example.com/primes&u=http://foobar.com/fibo HTTP/1.0
+I didn't know how to structure this files on Go, on Java I create have classes/files doing specific responsibilities
+but wasn't sure if Go works like that.
 
-It then retrieves the URLs specified as parameters.
+I didn't quite get the difference between methods and functions.
 
-The first URL returns this response:
+As I mentioned I wish i could have make parallel calls to call apis.
 
-	>>> GET /primes HTTP/1.0
-	>>> Host: example.com
-	>>> 
-	<<< HTTP/1.0 200 OK
-	<<< Content-Type: application/json
-	<<< Content-Length: 34
-	<<< 
-	<<< { "numbers": [ 2, 3, 5, 7, 11, 13 ] }
-
-The second URL returns this response:
-
-	>>> GET /fibo HTTP/1.0
-	>>> Host: foobar.com
-	>>> 
-	<<< HTTP/1.0 200 OK
-	<<< Content-Type: application/json
-	<<< Content-Length: 40
-	<<< 
-	<<< { "numbers": [ 1, 1, 2, 3, 5, 8, 13, 21 ] }
-
-The service then calculates the result and returns it.
-
-	<<< HTTP/1.0 200 OK
-	<<< Content-Type: application/json
-	<<< Content-Length: 44
-	<<< 
-	<<< { "numbers": [ 1, 2, 3, 5, 7, 8, 11, 13, 21 ] }
+I started to read about unit testing on go but I didn't have time left for it.
 
 
-Completion Conditions
----------------------
 
-Solve the task described above using Go. Only use what's provided in the Go 
-standard library. The resulting program must run stand-alone with no other 
-dependencies than the Go compiler.
-
-Document your source code, both using comments and in a separate text file that 
-describes the intentions and rationale behind your solution. Also write down 
-any ambiguities that you see in the task description, and describe you how you 
-interpreted them and why. If applicable, write automated tests for your code.
-
-For testing purposes, you will be provided with an example server that, when 
-run, listens on port 8090 and provides the endpoints /primes, /fibo, /odd and 
-/rand.
-
-Please return your working solution within 7 days of receiving the challenge.
